@@ -1,5 +1,5 @@
 const db = require("./database/db.js");
-// import db from "./database/db.js"; 
+// import db from "./database/db.js";
 
 const select_cohorts_in_finsbo = db.prepare(/*sql*/ `
   SELECT name FROM cohorts WHERE location = 'Finsbury Park' 
@@ -27,26 +27,36 @@ function listStudentsWithLocation() {
   return select_students_with_location.all();
 }
 
-// const select_students_with_projects = db.prepare(/*sql*/ `
-//   -- [4]
-// `);
+const select_students_with_projects = db.prepare(/*sql*/ `
+  SELECT projects.name, students.username FROM projects
+  INNER JOIN students_projects ON projects.id = students_projects.project_id
+  INNER JOIN students ON students.username = students_projects.student_username
+`);
 
-// function listStudentsWithProjects() {
-//   return select_students_with_projects.all();
-// }
+function listStudentsWithProjects() {
+  return select_students_with_projects.all();
+}
 
-// const select_students_with_projects_in_finsbo = db.prepare(/*sql*/ `
-//   -- [5]
-// `);
+const select_students_with_projects_in_finsbo = db.prepare(/*sql*/ `
+SELECT projects.name, students.username FROM projects
+INNER JOIN students_projects ON projects.id = students_projects.project_id
+INNER JOIN students ON students.username = students_projects.student_username
+WHERE students.username IN (
+  SELECT username FROM students
+    WHERE cohort_name IN (
+      SELECT name FROM cohorts WHERE location = 'Finsbury Park'
+    )
+  )
+`);
 
-// function listStudentsWithProjectsInFinsbo() {
-//   return select_students_with_projects_in_finsbo.all();
-// }
+function listStudentsWithProjectsInFinsbo() {
+  return select_students_with_projects_in_finsbo.all();
+}
 
 module.exports = {
   listCohortsInFinsbo,
   listStudentsInFinsbo,
   listStudentsWithLocation,
-  // listStudentsWithProjects,
-  // listStudentsWithProjectsInFinsbo,
+  listStudentsWithProjects,
+  listStudentsWithProjectsInFinsbo,
 };
